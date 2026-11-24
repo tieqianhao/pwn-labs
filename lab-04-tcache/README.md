@@ -84,6 +84,21 @@ make && python3 exploit.py
 2. 生产环境关闭调试接口（第 3 个缺陷；真实世界大量泄露来自忘关的 debug 端点）
 3. 升级 glibc：2.32+ 挡明文 next 篡改，2.34+ 移除 hook
 
+## 调试过程中真实踩到的两个「假故障」
+
+这两个坑与漏洞利用本身无关，但会让 exploit 看起来「时灵时不灵」，
+是实际打堆题时很容易浪费半天的类型：
+
+1. **stdio 预读吞掉发给 shell 的命令**。程序用 `fgets` 读菜单，stdio
+   可能一次性把管道里的 `echo PWNED`、`exit` 也读进自己的缓冲区；
+   随后 `system("/bin/sh")` 起的子进程去读 fd 0，看到的却是 EOF——
+   shell 立刻退出，父进程继续打印菜单。表现：hook 明明写对了，
+   却没拿到 shell。解法：`setvbuf(stdin, NULL, _IONBF, 0)`。
+2. **同一 stdin 上混用 stdio 与 `read()`**。`scanf` 的预读和 `read` 的
+   裸 fd 读取会互相抢字节，fill 的数据会错位。本 lab 统一走 stdio
+   （菜单 `fgets`、数据 `fread`），exploit 端按定长补齐。
+
 ## 验证状态
 
-`run_tests.sh` 容器内连续三轮实测通过（打印 libc base 并回显 `PWNED_LAB04`）。
+`run_tests.sh` 容器内实测通过；单 lab 连续 50 次运行 50/50 成功
+（修复上述两个坑之前是 40 次里错 4 次，属于典型的偶发故障）。
