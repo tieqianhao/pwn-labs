@@ -1,5 +1,7 @@
 # pwn-labs · Linux 二进制漏洞利用实验室
 
+![regression](https://github.com/tieqianhao/pwn-labs/actions/workflows/regression.yml/badge.svg)
+
 四个可复现的堆/栈漏洞利用实验，从「栈溢出返回后门」一路打通到
 「glibc 2.31 信息泄露 + tcache poisoning 劫持 `__free_hook`」。
 每个 lab = 漏洞源码 + exploit 脚本 + 逐段原理讲解 + 缓解机制对照 + 防御修复，

@@ -1,0 +1,20 @@
+name: regression
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 每周一 03:00 UTC（北京时间周一 11:00）全量回归
+    - cron: "0 3 * * 1"
+
+jobs:
+  docker-labs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build lab image (Ubuntu 20.04 / glibc 2.31)
+        run: docker build -t pwn-labs .
+
+      - name: Run all four exploits inside the container
+        run: docker run --rm pwn-labs bash run_tests.sh
